@@ -38,7 +38,7 @@ namespace Cloud5mins.ShortenerTools.Functions
                 var tempUrl = new ShortUrlEntity(string.Empty, shortUrl);
                 var newUrl = await stgHelper.GetShortUrlEntity(tempUrl);
 
-                if (newUrl != null)
+                if (newUrl != null && (newUrl.IsArchived.HasValue && !newUrl.IsArchived.Value))
                 {
                     _logger.LogInformation($"Found it: {newUrl.Url}");
                     newUrl.Clicks++;
