@@ -38,6 +38,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -98,6 +99,18 @@ namespace Cloud5mins.ShortenerTools.Functions
                     var badRequest = req.CreateResponse(HttpStatusCode.BadRequest);
                     await badRequest.WriteAsJsonAsync(new { Message = $"{input.Url} is not a valid absolute Url. The Url parameter must start with 'http://' or 'http://'." });
                     return badRequest;
+                }
+
+                //Validate if the input.url is allowed according to whitelist
+                if (!string.IsNullOrWhiteSpace(_settings.UrlWhitelistRegex))
+                {
+                    var regex = new Regex(_settings.UrlWhitelistRegex);
+                    if (!regex.IsMatch(input.Url))
+                    {
+                        var badResponse = req.CreateResponse(HttpStatusCode.BadRequest);
+                        await badResponse.WriteAsJsonAsync(new { Message = $"{input.Url} is not a valid whitelisted Url. Please contact administrator for allowed urls." });
+                        return badResponse;
+                    }
                 }
 
                 StorageTableHelper stgHelper = new StorageTableHelper(_settings.DataStorage);
